@@ -62,8 +62,6 @@
             color: var(--pastel-blue); /* Dark blue heading */
             font-weight: bold;
             padding: 10px 0;
-            background-color: var(--title-bg-color); /* Subtle blue background for heading */
-            border-radius: 5px;
         }
         label {
             display: block;
