@@ -100,6 +100,11 @@
         button:hover {
             background-color: #003d66; /* Darker blue on hover */
         }
+        .message {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: var(--accent-color); /* Red/pinkish accent for error messages */
+        }
         footer {
             background-color: var(--pastel-blue);
             color: white;
@@ -118,6 +123,17 @@
     <div class="mainC">
         <form action="CustomerServlet" method="post">
             <h2>Login</h2>
+
+            <% String name = (String) request.getAttribute("name");
+            if (name != null) { %>
+                <div class="message">
+                    <% if (name.equals("-1")) { %>
+                        User ID not found.
+                    <% } else if (name.equals("0")) { %>
+                        Incorrect password.
+                    <% } %>
+                </div>
+            <% } %>
 
             <label for="userId">User ID:</label>
             <input type="text" id="userId" name="userId" minlength="5" maxlength="20" required>
