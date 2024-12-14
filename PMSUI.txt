@@ -1,0 +1,904 @@
+PMS - Dumps!
+=====================================================================
+com.bean package
+----------------------------------------------------------------------------------------------------------------------
+User.java
+----------
+package com.bean;
+
+public class User {
+	int id;
+    private String name;
+    private String email;
+    private String mobile;
+    private String address;
+    private String preference;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getPreference() {
+		return preference;
+	}
+	public void setPreference(String preference) {
+		this.preference = preference;
+	}
+	public User(int id, String name, String email, String mobile, String address, String preference) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.mobile = mobile;
+		this.address = address;
+		this.preference = preference;
+	}
+}
+----------------------------------------------------------------------------------------------------------------------
+Booking.java
+----------------
+package com.bean;
+
+public class Booking{
+    private int bid; //book id
+    private int cid; //customer id
+    private String name;
+    private String address;
+    private String recName;
+    private String recAddress;
+    private double amount;
+    private String status;
+    private String pickupDate;
+    private String pickupTime;
+    private String dropDate;
+    private String dropTime;
+	public int getBid() {
+		return bid;
+	}
+	public void setBid(int bid) {
+		this.bid = bid;
+	}
+	public int getCid() {
+		return cid;
+	}
+	public void setCid(int cid) {
+		this.cid = cid;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getRecName() {
+		return recName;
+	}
+	public void setRecName(String recName) {
+		this.recName = recName;
+	}
+	public String getRecAddress() {
+		return recAddress;
+	}
+	public void setRecAddress(String recAddress) {
+		this.recAddress = recAddress;
+	}
+	public double getAmount() {
+		return amount;
+	}
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getPickupDate() {
+		return pickupDate;
+	}
+	public void setPickupDate(String pickupDate) {
+		this.pickupDate = pickupDate;
+	}
+	public String getPickupTime() {
+		return pickupTime;
+	}
+	public void setPickupTime(String pickupTime) {
+		this.pickupTime = pickupTime;
+	}
+	public String getDropDate() {
+		return dropDate;
+	}
+	public void setDropDate(String dropDate) {
+		this.dropDate = dropDate;
+	}
+	public String getDropTime() {
+		return dropTime;
+	}
+	public void setDropTime(String dropTime) {
+		this.dropTime = dropTime;
+	}
+	public Booking(int bid, int cid, String name, String address, String recName, String recAddress, double amount,
+			String status, String pickupDate, String pickupTime, String dropDate, String dropTime) {
+		super();
+		this.bid = bid;
+		this.cid = cid;
+		this.name = name;
+		this.address = address;
+		this.recName = recName;
+		this.recAddress = recAddress;
+		this.amount = amount;
+		this.status = status;
+		this.pickupDate = pickupDate;
+		this.pickupTime = pickupTime;
+		this.dropDate = dropDate;
+		this.dropTime = dropTime;
+	}
+}
+=====================================================================
+DB Table Schema
+-------------------
+USER Table
+-------------
+CREATE TABLE Users (
+    id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 10000, INCREMENT BY 1),
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    mobile VARCHAR(15),
+    address VARCHAR(255) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    preference VARCHAR(50),
+    access VARCHAR(10) DEFAULT 'Customer' NOT NULL
+);
+----------------------------------------------------------------------------------------------------------------------
+BOOKINGS Table
+--------------------
+CREATE TABLE Bookings (
+    bid INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 10000, INCREMENT BY 1),
+    cid INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    recName VARCHAR(100) NOT NULL,
+    recAddress VARCHAR(255) NOT NULL,
+    amount DOUBLE NOT NULL,
+    status VARCHAR(50),
+    pickupDate DATE,
+    pickupTime TIME,
+    dropDate DATE,
+    dropTime TIME,
+    FOREIGN KEY (cid) REFERENCES Users(id) ON DELETE CASCADE
+);
+----------------------------------------------------------------------------------------------------------------------
+ADMIN Creation
+-------------------
+INSERT INTO USERS (name,email,mobile,address,password,preference,access) 
+	VALUES ('Admin','admin@pms.com','+919596852310','PP TVM','admin','NA','Officer');
+=====================================================================
+com.util Package
+----------------------------------------------------------------------------------------------------------------------
+DBUtil.java
+-------------
+package com.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class DBUtil {
+	private static String driverpath = "org.apache.derby.jdbc.EmbeddedDriver";
+	private static String path = "PMS_DB";
+	
+	public static Connection getConnection() throws ClassNotFoundException, SQLException {
+		Class.forName(driverpath);
+		Connection con = DriverManager.getConnection("jdbc:derby:"+path+";create=true");
+		return con;
+	}
+	public void closeAllConnections(Connection con, PreparedStatement ps, ResultSet rs) throws SQLException {
+		if(con!=null) con.close();
+		if(ps!=null) ps.close();
+		if(rs!=null) rs.close();
+	}
+	//For creating the DB for the 1st time!
+//	public static void main(String args[]) {
+//		Connection CON = null;
+//		try {
+//			CON = getConnection();
+//			System.out.println("DB Created Successfully!");
+//		}catch(Exception e) {
+//			System.out.println("DB Creation Failed!");
+//			System.out.println(e.getMessage());
+//		}
+//	}
+}
+=====================================================================
+Homepage for all -- index.jsp
+----------------------------------------------------------------------------------------------------------------------
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parcel Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .login-options {
+            margin-top: 20px;
+        }
+        .toggle-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .toggle-button {
+            padding: 5px 15px;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .toggle-button.active {
+            background: #007bff;
+            color: white;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+    <script>
+        function toggleLogin(type) {
+            const customerBtn = document.getElementById('customer-btn');
+            const adminBtn = document.getElementById('admin-btn');
+            const formTitle = document.getElementById('form-title');
+            
+            if (type === 'customer') {
+                customerBtn.classList.add('active');
+                adminBtn.classList.remove('active');
+                formTitle.textContent = "Customer Login";
+            } else {
+                adminBtn.classList.add('active');
+                customerBtn.classList.remove('active');
+                formTitle.textContent = "Admin Login";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Parcel Management System</h1>
+        <a href="register.jsp" class="button">Register New Customer</a>
+
+        <div class="login-options">
+            <div class="toggle-container">
+                <button id="customer-btn" class="toggle-button active" onclick="toggleLogin('customer')">Customer</button>
+                <button id="admin-btn" class="toggle-button" onclick="toggleLogin('admin')">Admin</button>
+            </div>
+            <h2 id="form-title" style="text-align:center;">Customer Login</h2>
+            <a href="login.jsp?type=customer" class="button">Login</a>
+        </div>
+    </div>
+    <div class="footer">
+        © 2024 Parcel Management System. All rights reserved.
+    </div>
+</body>
+</html>
+----------------------------------------------------------------------------------------------------------------------
+User_Dashboard.jsp
+-----------------------
+<%@ page session="true" %>
+<%@ page import="java.util.*" %>
+<%
+    String customerName = (String) session.getAttribute("customerName");
+    if (customerName == null) {
+        response.sendRedirect("index.jsp");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #007bff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .navbar .menu {
+            display: flex;
+            gap: 20px;
+        }
+        .navbar .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .navbar .menu a:hover {
+            color: #d4e3f5;
+        }
+        .navbar .user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar .user span {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .navbar .logout-button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .navbar .logout-button:hover {
+            background-color: #a71d2a;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .container h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container .button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .container .button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">Customer Dashboard</div>
+        <div class="menu">
+            <a href="bookService.jsp">Book a Service</a>
+            <a href="trackBookings.jsp">Track Bookings</a>
+            <a href="previousBookings.jsp">Previous Bookings</a>
+            <a href="contactSupport.jsp">Contact Support</a>
+        </div>
+        <div class="user">
+            <span>Welcome, <%= customerName %>!</span>
+            <form action="logout.jsp" method="post" style="margin: 0;">
+                <button class="logout-button">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Welcome to Your Dashboard</h1>
+        <a href="bookService.jsp" class="button">Book a Service</a>
+        <a href="trackBookings.jsp" class="button">Track Bookings</a>
+        <a href="previousBookings.jsp" class="button">View Previous Bookings</a>
+        <a href="contactSupport.jsp" class="button">Contact Support</a>
+    </div>
+</body>
+</html>
+=====================================================================
+For Tracking ta specific Order
+----------------------------------------------------------------------------------------------------------------------
+BookingDAO.java
+----------------------
+package com.dao;
+
+import com.util.DBUtil;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookingDAO {
+
+    public List<String[]> getUndeliveredBookings(int customerId) throws SQLException, ClassNotFoundException {
+        List<String[]> bookings = new ArrayList<>();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBUtil.getConnection();
+            String query = "SELECT bid, pickupDate FROM Bookings WHERE cid = ? AND status != 'Delivered'";
+            ps = con.prepareStatement(query);
+            ps.setInt(1, customerId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                bookings.add(new String[]{String.valueOf(rs.getInt("bid")), rs.getDate("pickupDate").toString()});
+            }
+        } finally {
+            if (con != null) con.close();
+            if (ps != null) ps.close();
+            if (rs != null) rs.close();
+        }
+        return bookings;
+    }
+
+    public ResultSet getBookingDetails(int bookingId) throws SQLException, ClassNotFoundException {
+        Connection con = DBUtil.getConnection();
+        String query = "SELECT * FROM Bookings WHERE bid = ?";
+        PreparedStatement ps = con.prepareStatement(query);
+        ps.setInt(1, bookingId);
+        return ps.executeQuery();
+    }
+}
+----------------------------------------------------------------------------------------------------------------------
+BookingService.java
+-----------------------
+package com.service;
+
+import com.dao.BookingDAO;
+import java.sql.ResultSet;
+import java.util.List;
+
+public class BookingService {
+    private BookingDAO bookingDAO;
+
+    public BookingService() {
+        bookingDAO = new BookingDAO();
+    }
+
+    public List<String[]> getUndeliveredBookings(int customerId) throws Exception {
+        return bookingDAO.getUndeliveredBookings(customerId);
+    }
+
+    public ResultSet getBookingDetails(int bookingId) throws Exception {
+        return bookingDAO.getBookingDetails(bookingId);
+    }
+}
+----------------------------------------------------------------------------------------------------------------------
+TrackBookingsServlet.java
+-----------------------------
+package com.web;
+
+import com.service.BookingService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.util.List;
+
+@WebServlet("/trackBookings")
+public class TrackBookingsServlet extends HttpServlet {
+    private BookingService bookingService;
+
+    @Override
+    public void init() throws ServletException {
+        bookingService = new BookingService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("customerName") == null) {
+            response.sendRedirect("index.jsp");
+            return;
+        }
+
+        int customerId = (Integer) session.getAttribute("customerId");
+        try {
+            List<String[]> bookings = bookingService.getUndeliveredBookings(customerId);
+            request.setAttribute("bookings", bookings);
+            request.getRequestDispatcher("trackBookings.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to fetch bookings.");
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int bookingId = Integer.parseInt(request.getParameter("bookingId"));
+        try {
+            ResultSet bookingDetails = bookingService.getBookingDetails(bookingId);
+
+            StringBuilder detailsHtml = new StringBuilder();
+            if (bookingDetails.next()) {
+                detailsHtml.append("<h2>Booking Details</h2>")
+                        .append("<p><strong>Booking ID:</strong> ").append(bookingDetails.getInt("bid")).append("</p>")
+                        .append("<p><strong>Sender Name:</strong> ").append(bookingDetails.getString("name")).append("</p>")
+                        .append("<p><strong>Sender Address:</strong> ").append(bookingDetails.getString("address")).append("</p>")
+                        .append("<p><strong>Recipient Name:</strong> ").append(bookingDetails.getString("recName")).append("</p>")
+                        .append("<p><strong>Recipient Address:</strong> ").append(bookingDetails.getString("recAddress")).append("</p>")
+                        .append("<p><strong>Amount:</strong> ₹").append(bookingDetails.getDouble("amount")).append("</p>")
+                        .append("<p><strong>Status:</strong> ").append(bookingDetails.getString("status")).append("</p>")
+                        .append("<p><strong>Pickup Date:</strong> ").append(bookingDetails.getDate("pickupDate")).append("</p>")
+                        .append("<p><strong>Pickup Time:</strong> ").append(bookingDetails.getTime("pickupTime")).append("</p>")
+                        .append("<p><strong>Drop Date:</strong> ").append(bookingDetails.getDate("dropDate")).append("</p>")
+                        .append("<p><strong>Drop Time:</strong> ").append(bookingDetails.getTime("dropTime")).append("</p>");
+            } else {
+                detailsHtml.append("<p>No booking details found for the selected ID.</p>");
+            }
+
+            response.setContentType("text/html");
+            PrintWriter out = response.getWriter();
+            out.println(detailsHtml);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to fetch booking details.");
+        }
+    }
+}
+----------------------------------------------------------------------------------------------------------------------
+User_TrackBookings.jsp
+---------------------------
+<%@ page session="true" %>
+<%@ page import="java.util.List" %>
+<%
+    List<String[]> bookings = (List<String[]>) request.getAttribute("bookings");
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track Bookings</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: #ffffff; }
+        select, input[type="submit"] { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Track Your Bookings</h1>
+        <form method="post" action="trackBookings">
+            <label for="bookingId">Select Booking ID:</label>
+            <select name="bookingId" id="bookingId" required>
+                <option value="">-- Select Booking --</option>
+                <%
+                    if (bookings != null) {
+                        for (String[] booking : bookings) {
+                %>
+                            <option value="<%= booking[0] %>">Booking ID: <%= booking[0] %> | Pickup Date: <%= booking[1] %></option>
+                <%
+                        }
+                    }
+                %>
+            </select>
+            <input type="submit" value="View Booking Details">
+        </form>
+        <div id="details"></div>
+    </div>
+</body>
+</html>
+----------------------------------------------------------------------------------------------------------------------
+Navbar.jsp
+----------
+<%@ page session="true" %>
+<%@ page import="java.util.*" %>
+<%
+    String username = (String) session.getAttribute("username");
+    String role = (String) session.getAttribute("role");
+%>
+
+<!-- Navigation Bar -->
+<div class="navbar">
+    <div class="navbar-container">
+        <a href="home.jsp" class="logo">PMS</a>
+        <div class="user-info">
+            <% if (username != null) { %>
+                <span>Welcome, <%= username %>!</span>
+                <span>Role: <%= role != null ? role : "Customer" %></span>
+                <a href="logout.jsp" class="logout-btn">Logout</a>
+            <% } else { %>
+                <a href="login.jsp" class="logout-btn">Login</a>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Navigation Bar Styling */
+    .navbar {
+        background-color: #343a40;
+        padding: 10px 0;
+    }
+
+    .navbar-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar .logo {
+        color: #ffffff;
+        font-size: 24px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .navbar .user-info {
+        color: #ffffff;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar .user-info span {
+        margin-right: 15px;
+    }
+
+    .navbar .logout-btn {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .navbar .logout-btn:hover {
+        background-color: #c82333;
+    }
+</style>
+---------
+<%@ page session="true" %>
+<%@ page import="java.util.List" %>
+<%@ include file="navbar.jsp" %>
+<%
+    List<String[]> bookings = (List<String[]>) request.getAttribute("bookings");
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Bookings</title>
+    <style>
+        /* General Body and Font Settings */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background-color: #343a40;
+            padding: 10px 0;
+        }
+
+        .navbar-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .logo {
+            color: #ffffff;
+            font-size: 24px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .navbar .user-info {
+            color: #ffffff;
+        }
+
+        .navbar .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .navbar .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Container for Main Content */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        form label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        form select, form input[type="submit"] {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        form input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Booking Details Section */
+        #details {
+            margin-top: 20px;
+        }
+
+        #details h2 {
+            font-size: 22px;
+            color: #333;
+        }
+
+        #details p {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        #details strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Track Your Bookings</h1>
+        <form method="post" action="trackBookings">
+            <label for="bookingId">Select Booking ID:</label>
+            <select name="bookingId" id="bookingId" required>
+                <option value="">-- Select Booking --</option>
+                <%
+                    if (bookings != null) {
+                        for (String[] booking : bookings) {
+                %>
+                            <option value="<%= booking[0] %>">Booking ID: <%= booking[0] %> | Pickup Date: <%= booking[1] %></option>
+                <%
+                        }
+                    }
+                %>
+            </select>
+            <input type="submit" value="View Booking Details">
+        </form>
+        <div id="details"></div>
+    </div>
+</body>
+</html>
